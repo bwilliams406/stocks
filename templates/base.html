@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css">
+    <!-- ... other head elements ... -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style>
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .small-text {
+            font-size: 0.85rem;
+        }
+        .metric-box {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0,0,0,0.02);
+        }
+        .chart-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Stock Analysis Dashboard</a>
+            <div class="text-light" id="lastUpdate"></div>
+            <ul class="nav nav-tabs border-0" id="newsletterTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-dark" id="grants-tab" data-bs-toggle="tab" data-bs-target="#grants" type="button" role="tab">
+                        Grant's Observer
+                    </button>
+                </li>
+            </ul>
+            <button id="showAnalyticsBtn" class="btn btn-primary">
+                <i class="bi bi-graph-up"></i> Analytics Report
+            </button>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Main Content Area with Filters at Top -->
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-end g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Market</label>
+                        <select class="form-select" id="marketFilter">
+                            <option value="">All Markets</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sector</label>
+                        <select class="form-select" id="sectorFilter">
+                            <option value="">All Sectors</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date Range</label>
+                        <div class="d-flex gap-2">
+                            <input type="date" class="form-control" id="startDate">
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="btn-group w-100">
+                            <button class="btn btn-outline-primary" id="gridView">Grid</button>
+                            <button class="btn btn-outline-primary active" id="tableView">Table</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <!-- Table View -->
+                <div id="tableViewContent">
+                    <table class="table table-striped" id="stockTable">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Company Name</th>
+                                <th>Market</th>
+                                <th>Sector</th>
+                                <th>Report Date</th>
+                                <th>Price at Report</th>
+                                <th>Current Price</th>
+                                <th>Total Return</th>
+                                <th>Technical</th>
+                                <th>Fundamentals</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Grid View - Updated with search -->
+                <div id="gridViewContent" style="display: none;">
+                    <div class="container-fluid p-4">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Search</label>
+                                <input type="text" class="form-control" id="gridSearch" placeholder="Search by ticker, company name, or sector...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Sort By</label>
+                                <select class="form-select" id="gridSort">
+                                    <option value="ticker">Ticker</option>
+                                    <option value="price_current">Current Price</option>
+                                    <option value="price_change">Price Change %</option>
+                                    <option value="report_date">Report Date</option>
+                                    <option value="market_cap">Market Cap</option>
+                                    <option value="pe_ratio">P/E Ratio</option>
+                                    <option value="dividend_yield">Dividend Yield</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Order</label>
+                                <select class="form-select" id="gridSortOrder">
+                                    <option value="asc">Ascending</option>
+                                    <option value="desc">Descending</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4" id="gridCards">
+                            <!-- Cards will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Details Modal -->
+    <div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stockModalLabel">Stock Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="stockModalBody">
+                    <!-- Content will be dynamically inserted here -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Stock Price History</h6>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary active" onclick="updateTimeframe('1M')">1M</button>
+                                <button class="btn btn-outline-primary" onclick="updateTimeframe('3M')">3M</button>
+                                <button class="btn btn-outline-primary" onclick="updateTimeframe('6M')">6M</button>
+                                <button class="btn btn-outline-primary" onclick="updateTimeframe('1Y')">1Y</button>
+                                <button class="btn btn-outline-primary" onclick="updateTimeframe('3Y')">3Y</button>
+                                <button class="btn btn-outline-primary" onclick="updateTimeframe('5Y')">5Y</button>
+                                <button class="btn btn-outline-primary" onclick="updateTimeframe('ALL')">ALL</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="stockChart" style="height: 400px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Closes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div class="modal fade" id="analyticsModal" tabindex="-1" aria-labelledby="analyticsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="analyticsModalLabel">Recommendation Analytics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Overall Accuracy</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h2 id="overallAccuracy" class="text-center">--%</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Search</span>
+                                <input type="text" class="form-control" id="analyticsSearch" placeholder="Filter...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Sort By</span>
+                                <select class="form-select" id="analyticsSortColumn">
+                                    <option value="0">Ticker</option>
+                                    <option value="1" selected>Date</option>
+                                    <option value="3">Initial Price</option>
+                                    <option value="4">3M Return</option>
+                                    <option value="5">6M Return</option>
+                                    <option value="6">1Y Return</option>
+                                    <option value="7">2Y Return</option>
+                                    <option value="8">5Y Return</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Order</span>
+                                <select class="form-select" id="analyticsSortOrder">
+                                    <option value="asc">Ascending</option>
+                                    <option value="desc" selected>Descending</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Show</span>
+                                <select class="form-select" id="analyticsPageLength">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="-1">All</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover w-100" id="analyticsTable">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Date</th>
+                                    <th>Sentiment</th>
+                                    <th>Initial</th>
+                                    <th>3M</th>
+                                    <th>6M</th>
+                                    <th>1Y</th>
+                                    <th>2Y</th>
+                                    <th>5Y</th>
+                                    <th>Short-Term<br>Accurate</th>
+                                    <th>Long-Term<br>Accurate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    
+    <!-- Chart.js and related -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/dist/date-fns.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS (load these last) -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/analytics.js"></script>
+</body>
+</html>
+

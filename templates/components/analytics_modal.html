@@ -1,0 +1,105 @@
+<!-- Analytics Modal -->
+<div class="modal fade" id="analyticsModal" tabindex="-1" aria-labelledby="analyticsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="analyticsModalLabel">Grants Recommendation Analytics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Debug Info (can be removed later) -->
+                <div id="analyticsDebug" style="display: none;">
+                    <pre class="bg-light p-2">
+                        <code id="analyticsDebugContent"></code>
+                    </pre>
+                </div>
+
+                <!-- Overall Accuracy -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Overall Accuracy</h6>
+                            </div>
+                            <div class="card-body">
+                                <h2 id="overallAccuracy" class="text-center">--%</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Search</span>
+                            <input type="text" class="form-control" id="analyticsSearch" placeholder="Filter...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Sort By</span>
+                            <select class="form-select" id="analyticsSortColumn">
+                                <option value="0">Ticker</option>
+                                <option value="1" selected>Date</option>
+                                <option value="3">Initial Price</option>
+                                <option value="4">3M Return</option>
+                                <option value="5">6M Return</option>
+                                <option value="6">1Y Return</option>
+                                <option value="7">2Y Return</option>
+                                <option value="8">5Y Return</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <span class="input-group-text">Order</span>
+                            <select class="form-select" id="analyticsSortOrder">
+                                <option value="asc">Ascending</option>
+                                <option value="desc" selected>Descending</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <span class="input-group-text">Show</span>
+                            <select class="form-select" id="analyticsPageLength">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="-1">All</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover w-100" id="analyticsTable">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Date</th>
+                                <th>Sentiment</th>
+                                <th>Initial</th>
+                                <th>3M</th>
+                                <th>6M</th>
+                                <th>1Y</th>
+                                <th>2Y</th>
+                                <th>5Y</th>
+                                <th>Short-Term<br>Accurate</th>
+                                <th>Long-Term<br>Accurate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyticsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div> 
