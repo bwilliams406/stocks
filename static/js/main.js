@@ -376,7 +376,7 @@ async function showDetails(ticker) {
                                             <td>$${currentPrice?.toFixed(2) || 'N/A'}</td>
                                             <td class="${getReturnClass(totalReturn)}">${totalReturn}</td>
                                             <td>
-                                                <a href="${pdfUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <a href="/static${pdfUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                     <i class="bi bi-file-pdf"></i> View
                                                 </a>
                                             </td>
